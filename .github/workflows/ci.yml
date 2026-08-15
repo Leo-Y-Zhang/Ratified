@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v4.2.3/elan-x86_64-unknown-linux-gnu.tar.gz \
+            | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Toolchain
+        run: |
+          lean --version
+          lake --version
+
+      # Builds every module. The proofs are checked by the kernel, the worked
+      # examples by `#guard`, and the axiom list by `#guard_msgs` -- so a `sorry`
+      # or a `native_decide` anywhere fails this step.
+      - name: Build
+        run: lake build
+
+  mutations:
+    name: Mutation evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v4.2.3/elan-x86_64-unknown-linux-gnu.tar.gz \
+            | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      # Re-derives MUTATIONS.md on hardware that is not the author's and fails if
+      # the result differs from what is committed. The evidence is therefore
+      # checked rather than asserted.
+      - name: Re-run the mutation campaign
+        run: python3 tools/mutations.py
+
+      - name: The committed evidence must match
+        run: git diff --exit-code -- MUTATIONS.md
+
+  gitleaks:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The pinned binary over the whole history, not the action: the action
+      # scans only the pushed range, so a secret committed earlier and never
+      # touched again is never looked at, and it fails outright on a repository's
+      # first push because the root commit has no parent.
+      - name: Install gitleaks 8.30.1
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz \
+            | tar xz gitleaks
+          sudo mv gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Scan
+        run: gitleaks detect --source . --redact --exit-code 1 --log-opts=--all

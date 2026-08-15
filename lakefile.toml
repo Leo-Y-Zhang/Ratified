@@ -1,0 +1,6 @@
+name = "ratified"
+version = "0.1.0"
+defaultTargets = ["Ratified"]
+
+[[lean_lib]]
+name = "Ratified"
