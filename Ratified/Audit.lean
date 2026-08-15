@@ -35,6 +35,10 @@ namespace Ratified
 #guard_msgs in
 #print axioms Ratified.propagate_ne_none
 
+/-- info: 'Ratified.propagate_nodup' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms Ratified.propagate_nodup
+
 /-- info: 'Ratified.F₁_unsat' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms Ratified.F₁_unsat

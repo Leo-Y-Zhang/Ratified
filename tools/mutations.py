@@ -51,6 +51,18 @@ MUTATIONS = [
             "DRAT path there is nothing in the file to contradict it.",
     ),
     dict(
+        name="Propagation is allowed to reassign a variable",
+        file="Ratified/Propagate.lean",
+        old="  decide (l ∈ c) && isUnassigned t l &&\n"
+            "    c.all (fun l' => decide (l' = l) || isFalse t l')",
+        new="  decide (l ∈ c) &&\n"
+            "    c.all (fun l' => decide (l' = l) || isFalse t l')",
+        rule="`isUnitOn` requires the forced literal to be unassigned",
+        why="Without it propagation can put a variable on the trail twice, and the "
+            "fuel bound stops being finite for the reason `fuelFor` claims. This is "
+            "what makes the progress theorems load-bearing rather than decorative.",
+    ),
+    dict(
         name="The candidate set is truncated",
         file="Ratified/RAT.lean",
         old="  f.filter (fun d => decide (p.negate ∈ d))",

@@ -57,6 +57,19 @@ setting the fuel to zero leaves every soundness proof compiling and breaks the
 executable examples. That is the intended division of labour between the two
 gates, demonstrated rather than asserted.
 
+What *is* proved about the bound is that a finite one exists. `findUnit_var_fresh`
+says a forced literal is always on a variable the trail has no opinion about —
+`isUnitOn` demands the literal be unassigned, and the only two literals on a
+variable are a literal and its complement — and `propagate_nodup` lifts that
+through the recursion: the returned trail never mentions a variable twice. So the
+instance's variable count bounds the number of steps.
+
+Going from there to "`fuelFor` is always large enough" is a pigeonhole count of
+the trail against the instance's variables. Lean's core library does not carry
+the list lemmas that argument needs, and importing `mathlib` for them would cost
+the whole no-dependency property, which is worth more here than closing a gap
+that costs a rejection rather than a false accept.
+
 **Hand-written searches.** `findConflict`, `findUnitLit` and `findUnit` are
 written by explicit recursion rather than through `List.findSome?`, so each
 specification lemma is a two-case induction that depends on nothing. The library

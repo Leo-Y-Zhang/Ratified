@@ -227,4 +227,62 @@ theorem propagate_ne_none {a : Assign} {f : Formula} (hf : satFormula a f = true
               exact ih _ (agree_cons (satLit_of_isUnitOn hf hcf hag hunit) hag)
           · simp
 
+/-! ### Progress
+
+Soundness never needed to know that propagation makes progress -- running out of
+fuel refuses to claim a conflict, so a short bound costs completeness and nothing
+else. But the *reason* the bound is finite was, until here, only a comment on
+`fuelFor`: each step assigns a variable that was not assigned before, so no
+variable is ever assigned twice.
+
+That claim is load-bearing for anyone deciding what fuel to pass, so it is proved
+rather than asserted. -/
+
+/-- The variables the trail has an opinion about. -/
+def trailVars (t : List Lit) : List Nat := t.map Lit.var
+
+/-- A forced literal is always on a fresh variable.
+
+`isUnitOn` requires the literal to be unassigned, and being unassigned means
+neither it nor its complement is on the trail -- which, since those are the only
+two literals on that variable, means the variable is absent entirely. -/
+theorem findUnit_var_fresh {t : List Lit} {f : Formula} {c : Clause} {l : Lit}
+    (h : findUnit t f = some (c, l)) : l.var ∉ trailVars t := by
+  have hunit := (findUnit_spec h).2
+  simp only [isUnitOn, Bool.and_eq_true] at hunit
+  have hun := hunit.1.2
+  simp only [isUnassigned, Bool.and_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true,
+    decide_eq_false_iff_not] at hun
+  intro hmem
+  obtain ⟨x, hx, hxv⟩ := List.mem_map.mp hmem
+  rcases Lit.eq_or_eq_negate hxv with rfl | rfl
+  · exact hun.1 hx
+  · exact hun.2 hx
+
+/-- **Propagation assigns each variable at most once.** The trail it returns
+never mentions a variable twice, so the number of distinct variables in the
+instance bounds the number of steps -- which is why a finite fuel exists at
+all. -/
+theorem propagate_nodup {f : Formula} :
+    ∀ (n : Nat) (t t' : List Lit), (trailVars t).Nodup →
+      propagate f n t = some t' → (trailVars t').Nodup := by
+  intro n
+  induction n with
+  | zero =>
+      intro t t' hnd h
+      simp only [propagate, Option.some.injEq] at h
+      exact h ▸ hnd
+  | succ n ih =>
+      intro t t' hnd h
+      simp only [propagate] at h
+      split at h
+      · simp at h
+      · split at h
+        · simp at h
+        · split at h
+          · next cl li hp =>
+              exact ih (li :: t) t' (List.nodup_cons.mpr ⟨findUnit_var_fresh hp, hnd⟩) h
+          · simp only [Option.some.injEq] at h
+            exact h ▸ hnd
+
 end Ratified

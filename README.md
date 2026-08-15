@@ -48,6 +48,10 @@ This one quantifies over every proof there is.
 - **Propagation soundness.** If unit propagation reaches a conflict from a trail,
   no model of the formula agrees with that trail. Every later result is an
   application of this.
+- **Propagation progress.** A forced literal is always on a variable the trail
+  has no opinion about, so propagation assigns each variable at most once and the
+  trail it returns never mentions one twice. That is what makes a finite fuel
+  bound exist at all — it was a comment on `fuelFor` before it was a theorem.
 - **RUP soundness.** A RUP clause is *entailed*: every model of the formula
   already satisfies it.
 - **RAT soundness.** A RAT clause on a pivot it contains can be added without
@@ -117,8 +121,12 @@ Concretely, out of scope here:
 - **Completeness.** Nothing here says the checker accepts every valid proof. The
   fuel bound on propagation makes that explicit: running out of fuel refuses to
   claim a conflict, which can only cause a rejection, so soundness does not
-  depend on the bound being generous. Whether it is generous enough is answered
-  by executable examples, not by a theorem.
+  depend on the bound being generous. What *is* proved is that a finite bound
+  exists — `propagate_nodup` — because no variable is ever assigned twice. What
+  is not proved is that the particular value `fuelFor` computes is always large
+  enough. Closing that needs a pigeonhole count of the trail against the
+  instance's variables, and Lean's core library does not carry the list lemmas
+  for it; today the question is answered by executable examples instead.
 
 ## Evidence
 
@@ -134,12 +142,12 @@ No `sorryAx`, so nothing is left unproved. No `Lean.ofReduceBool`, so no
 Not even `Classical.choice`.
 
 **Mutation evidence.** A proof that has never been observed failing is
-decoration. `MUTATIONS.md` records six rules that could be quietly dropped, the
-mutation that drops each one, and the build failure that resulted — **six of six
-killed**. The split is the interesting part: the five soundness rules are caught
-by proofs failing to compile, and the one completeness rule (the fuel bound) is
-invisible to every proof and caught only by an executable check. That is what the
-design predicted, and it is why both gates exist.
+decoration. `MUTATIONS.md` records seven rules that could be quietly dropped, the
+mutation that drops each one, and the build failure that resulted — **seven of
+seven killed**. The split is the interesting part: the six soundness rules are
+caught by proofs failing to compile, and the one completeness rule (the fuel
+bound) is invisible to every proof and caught only by an executable check. That
+is what the design predicted, and it is why both gates exist.
 
 CI re-runs the whole campaign on hardware that is not mine and fails if the
 regenerated `MUTATIONS.md` differs from the committed one, so the evidence is
@@ -190,8 +198,8 @@ sh tools/differential.sh <ratified-binary> <refute-binary> <fixture-dir>
 | `Ratified/Parse.lean` | DIMACS and DRAT readers — **unverified**, the boundary |
 | `Main.lean` | The command line |
 
-837 lines of Lean for the proof, 144 more for the reader and the command line.
-38 theorems, no dependencies.
+899 lines of Lean for the proof, 144 more for the reader and the command line.
+40 theorems, no dependencies.
 
 ## Licence
 

@@ -8,7 +8,7 @@ green tree, built, and reverted, and the tree was rebuilt green afterwards.
 Regenerate with `python tools/mutations.py`, which does exactly that and
 rewrites this file.
 
-**6 of 6 mutations killed.**
+**7 of 7 mutations killed.**
 
 ## The empty clause is given a free pass instead of needing a pivot
 
@@ -68,6 +68,30 @@ error: build failed
 
 ```
 error: Ratified/Propagate.lean:98:12: Function expected at
+error: Ratified/Propagate.lean:252:14: Invalid projection: Projections extract constructor fields for one-constructor inductive types. The expression
+error: Ratified/Propagate.lean:249:62: unsolved goals
+error: Lean exited with code 1
+error: build failed
+```
+
+## Propagation is allowed to reassign a variable
+
+- **Rule:** `isUnitOn` requires the forced literal to be unassigned
+- **Why it is load-bearing:** Without it propagation can put a variable on the trail twice, and the fuel bound stops being finite for the reason `fuelFor` claims. This is what makes the progress theorems load-bearing rather than decorative.
+- **File:** `Ratified/Propagate.lean`
+- **Verdict:** KILLED, the build fails
+- **Caught by:** `Ratified/Propagate.lean`, a soundness proof
+
+```diff
+-  decide (l ∈ c) && isUnassigned t l &&
+-    c.all (fun l' => decide (l' = l) || isFalse t l')
++  decide (l ∈ c) &&
++    c.all (fun l' => decide (l' = l) || isFalse t l')
+```
+
+```
+error: Ratified/Propagate.lean:253:14: Invalid projection: Projections extract constructor fields for one-constructor inductive types. The expression
+error: Ratified/Propagate.lean:250:62: unsolved goals
 error: Lean exited with code 1
 error: build failed
 ```
