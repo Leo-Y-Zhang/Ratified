@@ -10,12 +10,21 @@ Basic       literals, clauses, formulas, assignments, satisfaction
       └ RUP         the RUP check, RUP soundness
           └ RAT         the RAT check, the witness flip, RAT soundness
               └ Proof       steps, checkProof, checkProof_sound, no_false_accept
-                  └ Examples    worked examples decided by the kernel
-                      └ Audit       the pinned axiom list
+                  ├ Examples    worked examples decided by the kernel
+                  │   └ Audit       the pinned axiom list
+                  └ Parse       DIMACS and DRAT readers -- UNVERIFIED
+                      └ Main        the command line
 ```
 
 The dependency order is also the argument's order. Nothing later is used earlier,
 and there are no mutual dependencies.
+
+`Parse` and `Main` sit deliberately at the bottom and outside the argument.
+Everything above `Parse` is a statement about Lean values; `Parse` is what turns
+bytes into them, and it is where the guarantee stops. Keeping it in a separate
+module with that written in its header is the cheapest way to stop the boundary
+from blurring — the temptation, once a binary prints `s VERIFIED` on a real
+certificate, is to describe the whole pipeline as verified.
 
 ## Modelling decisions, and why
 
@@ -109,6 +118,8 @@ The two cases share their last step, which is the lemma `var_ne_of_true`.
 | `#guard` | The executable checker returning the wrong verdict | `Examples.lean` |
 | `#guard_msgs` on `#print axioms` | A `sorry` or a `native_decide` appearing anywhere | `Audit.lean` |
 | Mutation campaign | A rule that is stated but not actually load-bearing | `tools/mutations.py` |
+| Fixture corpus | The compiled checker giving the wrong verdict on a real proof | `tools/fixtures.sh` |
+| Differential run | The rule as proved and the rule as implemented in Rust diverging | `tools/differential.sh` |
 | gitleaks, pinned binary, full history | Secrets | CI |
 
 The mutation campaign runs in CI and the regenerated `MUTATIONS.md` must match

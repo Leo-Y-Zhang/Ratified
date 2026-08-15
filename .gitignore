@@ -1,5 +1,6 @@
 .lake/
 build/
+fixtures/.failures
 *.olean
 *.ilean
 *.trace

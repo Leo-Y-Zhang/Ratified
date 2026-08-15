@@ -1,6 +1,10 @@
 name = "ratified"
 version = "0.1.0"
-defaultTargets = ["Ratified"]
+defaultTargets = ["Ratified", "ratified"]
 
 [[lean_lib]]
 name = "Ratified"
+
+[[lean_exe]]
+name = "ratified"
+root = "Main"

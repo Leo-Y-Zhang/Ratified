@@ -1,0 +1,16 @@
+# The verdict each pair must receive. Checked by tools/fixtures.sh, which is run
+# in CI. Format: <expected verdict> <fixture name>.
+#
+# The three NOT-VERIFIED entries are the ones that matter. A checker that
+# accepts everything passes the six positives and fails here.
+
+VERIFIED        tiny_unsat
+VERIFIED        empty_clause_in_cnf
+VERIFIED        deletes_originals
+VERIFIED        real_rat_proof
+VERIFIED        rat_pigeonhole
+VERIFIED        vdw_a217058_n21
+
+NOT-VERIFIED    d08_satisfiable_formula
+NOT-VERIFIED    d09_trail_leak_between_candidates
+NOT-VERIFIED    d10_duplicate_clause_deleted_once

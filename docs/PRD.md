@@ -34,8 +34,11 @@ One reader, in three situations:
 - Every load-bearing side condition has a recorded mutation that kills the build.
 - No dependencies, so a reader can build it without fetching a library ten times
   the size of the proof.
+- The checker runs on real certificates rather than only on examples chosen to
+  make it look good, and its verdicts are compared against an independent
+  implementation.
 
-All five hold. The evidence is in `README.md`, `MUTATIONS.md` and
+All six hold. The evidence is in `README.md`, `MUTATIONS.md` and
 `Ratified/Audit.lean`.
 
 ## Explicit non-goals
@@ -43,9 +46,14 @@ All five hold. The evidence is in `README.md`, `MUTATIONS.md` and
 - **Verifying Refute.** The Rust is not extracted from this and this proves
   nothing about it. Saying otherwise would be the single most tempting overclaim
   available here, so it is stated as a non-goal and repeated in the README.
-- **A parser.** Formulas and proofs arrive as Lean values.
+- **A verified parser.** There is a reader, in `Ratified/Parse.lean`, because a
+  checker that cannot open a file is not a checker. It is unverified and labelled
+  as such in its own header, in the README, and here. It is the boundary of the
+  development, not part of it.
 - **An efficient checker.** Lists and linear scans throughout. The model is meant
-  to be read, not run at scale.
+  to be read, not run at scale. Measured: about 130× slower than Refute on the
+  largest fixture, which is fine for replaying real certificates of that size and
+  hopeless for a megabyte one.
 - **Completeness.** Nothing claims every valid proof is accepted.
 - **LRAT.** The hint-carrying format is a different check with different failure
   modes; RUP and RAT are the rules underneath both, and they are what is proved.

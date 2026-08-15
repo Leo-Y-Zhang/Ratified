@@ -9,6 +9,11 @@ first — [Refute](https://github.com/Leo-Y-Zhang/Refute) — and its design doc
 justifies the RAT rule in a paragraph that ends "that is the whole argument".
 This repository is that argument, checked by a machine instead of by a reader.
 
+It is not only a proof. `checkProof` is an executable function, so the same
+definition the theorem is about ships as a command-line checker — and it replays
+real certificates, including the refutation behind a published van der Waerden
+number.
+
 No `mathlib`, no dependencies at all: Lean core only. `lake build` takes a few
 seconds from a warm toolchain.
 
@@ -59,6 +64,25 @@ RAT check accepts together with a model of the formula that falsifies it. So a
 RAT step really can add a clause that was not implied, which is why its theorem
 concludes that satisfiability is preserved rather than that the clause follows.
 
+## Running it
+
+```
+lake build ratified
+.lake/build/bin/ratified fixtures/vdw_a217058_n21.cnf fixtures/vdw_a217058_n21.drat
+s VERIFIED
+```
+
+That pair is a van der Waerden instance from the computation behind **OEIS
+A217058**, whose value `a(12) = 57` is published: 157 variables, 552 clauses, and
+a 559-step refutation with 519 RUP steps, 40 genuine RAT steps and 633 deletions,
+produced by `kissat`. The function whose soundness is proved above replays it and
+accepts it, in about seven seconds.
+
+`fixtures/` holds nine pairs and `fixtures/EXPECTED` the verdict each must
+receive — six accepted, three rejected. `tools/fixtures.sh` checks all nine and
+runs in CI. The three rejections are the ones that carry the weight: a checker
+that accepts everything passes the six positives.
+
 ## What is not proved
 
 This matters more than the list above, so it is specific.
@@ -70,15 +94,26 @@ examples — that is all the connection there is.
 
 Concretely, out of scope here:
 
-- **Parsing.** No DIMACS or DRAT reader. Formulas and proofs arrive as Lean
-  values, so nothing about malformed input, binary proofs, or integer overflow in
-  a literal is covered.
+- **The readers.** `Ratified/Parse.lean` turns DIMACS and DRAT text into Lean
+  values and is completely unverified. It is the boundary: the theorem starts
+  where the reader returns. It fails loudly rather than skipping what it cannot
+  understand, because a reader that silently dropped a malformed clause would
+  make a verdict meaningless while still printing it — but that is a design
+  choice, not a proof.
+- **The compiler.** The binary is produced by Lean's compiler, not reduced by its
+  kernel, so running it trusts the compiler in the way any extracted verified
+  program does. The kernel-checked version of the same claim, for formulas small
+  enough to decide that way, is in `Ratified/Examples.lean`; `F₁_unsat` is a
+  theorem obtained by handing the checker's verdict to `checkProof_sound`, with
+  no compiler involved.
 - **The data structures.** This model uses lists and linear scans. A real checker
   uses a clause arena, watched literals, an occurrence index and a deletion
   index, and a bug in any of those is a bug this proof cannot see. In particular
   the completeness of the RAT candidate set is trivial here — it is a `filter`
-  over the formula — and is exactly the delicate part in an implementation.
-- **Resource limits, I/O, and the command line.** All absent.
+  over the formula — and is exactly the delicate part in an implementation. The
+  price is measured in `docs/DIFFERENTIAL.md`: about 130× slower than Refute on
+  the largest fixture.
+- **Resource limits.** Absent. A hostile input can make the checker slow.
 - **Completeness.** Nothing here says the checker accepts every valid proof. The
   fuel bound on propagation makes that explicit: running out of fuel refuses to
   claim a conflict, which can only cause a rejection, so soundness does not
@@ -115,6 +150,14 @@ refutation the checker accepts, a satisfiable formula it must not, the RAT
 example above, and the individual rules that are load-bearing on their own — the
 empty clause having no pivot, and a repeated literal not being a tautology.
 
+**Agreement with an independent implementation.** Refute is a DRAT checker in
+Rust, written to the same rule and sharing no code with this. On all nine
+fixtures the two agree — **9 agreed, 0 disagreed** — including the vdW
+refutation, the pigeonhole proof, and the satisfiable formula both must reject.
+Verdicts are compared by exit code so wording cannot mask a difference.
+`docs/DIFFERENTIAL.md` has the table, the timings, and what the result is and is
+not evidence of.
+
 ## Building
 
 ```
@@ -125,10 +168,12 @@ The toolchain is pinned in `lean-toolchain`. With
 [elan](https://github.com/leanprover/elan) installed, `lake` fetches it on first
 build; no system-wide install and no administrator rights are needed.
 
-To re-derive the mutation evidence:
+To re-derive the mutation evidence, replay the corpus, or compare against Refute:
 
 ```
 python tools/mutations.py
+sh tools/fixtures.sh .lake/build/bin/ratified fixtures
+sh tools/differential.sh <ratified-binary> <refute-binary> <fixture-dir>
 ```
 
 ## Layout
@@ -142,8 +187,11 @@ python tools/mutations.py
 | `Ratified/Proof.lean` | Steps, the derivation, `checkProof_sound`, `no_false_accept` |
 | `Ratified/Examples.lean` | Worked examples, decided by the kernel |
 | `Ratified/Audit.lean` | The pinned axiom list |
+| `Ratified/Parse.lean` | DIMACS and DRAT readers — **unverified**, the boundary |
+| `Main.lean` | The command line |
 
-837 lines of Lean, 38 theorems, no dependencies.
+837 lines of Lean for the proof, 144 more for the reader and the command line.
+38 theorems, no dependencies.
 
 ## Licence
 
