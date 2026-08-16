@@ -25,27 +25,49 @@ def usage : String :=
    Checks a DRAT proof against a DIMACS formula using the rule proved sound in\n\
    this development. Exit 0 verified, 1 not verified, 2 unreadable input."
 
+/-- Read one input, returning the failure as a value instead of raising it.
+
+`IO.FS.readFile` throws when the file is missing, is a directory, or cannot be
+read, and an exception that escapes `main` leaves through the Lean runtime with
+exit code 1 -- which is this tool's code for `s NOT VERIFIED`. Not having been
+able to read a file is not a verdict about a proof and must not leave by the same
+door as one, so the failure is caught here and reported as exit 2 instead. -/
+def readInput (label path : String) : IO (Except String String) := do
+  try
+    let text ← IO.FS.readFile path
+    return .ok text
+  catch e =>
+    return .error s!"{label}: {e}"
+
 def main (args : List String) : IO UInt32 := do
   match args with
   | [cnfPath, proofPath] =>
-      let cnfText ← IO.FS.readFile cnfPath
-      let proofText ← IO.FS.readFile proofPath
-      match Parse.parseCnf cnfText with
+      match ← readInput "formula" cnfPath with
       | .error e =>
-          IO.eprintln s!"formula: {e}"
+          IO.eprintln e
           return 2
-      | .ok formula =>
-        match Parse.parseDrat proofText with
+      | .ok cnfText =>
+        match ← readInput "proof" proofPath with
         | .error e =>
-            IO.eprintln s!"proof: {e}"
+            IO.eprintln e
             return 2
-        | .ok steps =>
-            if checkProof formula steps then
-              IO.println "s VERIFIED"
-              return 0
-            else
-              IO.println "s NOT VERIFIED"
-              return 1
+        | .ok proofText =>
+          match Parse.parseCnf cnfText with
+          | .error e =>
+              IO.eprintln s!"formula: {e}"
+              return 2
+          | .ok formula =>
+            match Parse.parseDrat proofText with
+            | .error e =>
+                IO.eprintln s!"proof: {e}"
+                return 2
+            | .ok steps =>
+                if checkProof formula steps then
+                  IO.println "s VERIFIED"
+                  return 0
+                else
+                  IO.println "s NOT VERIFIED"
+                  return 1
   | _ =>
       IO.eprintln usage
       return 2

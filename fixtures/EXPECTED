@@ -14,3 +14,13 @@ VERIFIED        vdw_a217058_n21
 NOT-VERIFIED    d08_satisfiable_formula
 NOT-VERIFIED    d09_trail_leak_between_candidates
 NOT-VERIFIED    d10_duplicate_clause_deleted_once
+
+# The last entry has no files on disk, deliberately. The harness hands the
+# checker two paths that do not exist, and the run must come back ERROR(2):
+# "I could not read the input" is a third answer, not a verdict about a proof.
+# Without this row an unreadable file exits 1 through the Lean runtime and is
+# recorded as NOT-VERIFIED -- the checker saying a proof is bad when what it
+# means is that it never saw one. Creating a pair under this name breaks the
+# test, which is the point.
+
+ERROR(2)        unreadable_input_has_no_verdict

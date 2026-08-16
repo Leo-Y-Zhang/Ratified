@@ -83,9 +83,12 @@ produced by `kissat`. The function whose soundness is proved above replays it an
 accepts it, in about seven seconds.
 
 `fixtures/` holds nine pairs and `fixtures/EXPECTED` the verdict each must
-receive — six accepted, three rejected. `tools/fixtures.sh` checks all nine and
-runs in CI. The three rejections are the ones that carry the weight: a checker
-that accepts everything passes the six positives.
+receive — six accepted, three rejected — together with a tenth row whose pair
+deliberately does not exist. `tools/fixtures.sh` checks all ten and runs in CI.
+The three rejections are the ones that carry the weight: a checker that accepts
+everything passes the six positives. The tenth pins the third answer: an input
+the checker could not read exits 2, not 1, because "I never saw a proof" is not
+the same claim as "this proof is bad".
 
 ## What is not proved
 
@@ -198,7 +201,7 @@ sh tools/differential.sh <ratified-binary> <refute-binary> <fixture-dir>
 | `Ratified/Parse.lean` | DIMACS and DRAT readers — **unverified**, the boundary |
 | `Main.lean` | The command line |
 
-899 lines of Lean for the proof, 144 more for the reader and the command line.
+899 lines of Lean for the proof, 166 more for the reader and the command line.
 40 theorems, no dependencies.
 
 ## Licence
