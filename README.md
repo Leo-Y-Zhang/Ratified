@@ -80,7 +80,7 @@ s VERIFIED
 
 That pair is a van der Waerden instance from the computation behind **OEIS
 A217058**, whose value `a(12) = 57` is published: 157 variables, 552 clauses, and
-a 559-step refutation with 519 RUP steps, 40 genuine RAT steps and 633 deletions,
+a 1192-step refutation (559 additions: 519 RUP and 40 genuine RAT; 633 deletions),
 produced by `kissat`. The function whose soundness is proved above replays it and
 accepts it, in about seven seconds.
 
