@@ -8,6 +8,8 @@ The rules are the ones a DRAT checker implements. I wrote such a checker in Rust
 first — [Refute](https://github.com/Leo-Y-Zhang/Refute) — and its design document
 justifies the RAT rule in a paragraph that ends "that is the whole argument".
 This repository is that argument, checked by a machine instead of by a reader.
+The theorems, proofs and evidence are written up as a preprint:
+[aiXiv:2610.03288](https://aixiv.online/abs/2610.03288).
 
 It is not only a proof. `checkProof` is an executable function, so the same
 definition the theorem is about ships as a command-line checker — and it replays
