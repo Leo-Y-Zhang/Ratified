@@ -1,6 +1,5 @@
 /-
-Worked examples. The theorems are checked by the kernel; the `#guard` lines are
-run by Lean's evaluator, which the kernel does not check.
+Worked examples: theorems are kernel-checked, `#guard` lines are evaluator-run.
 
 Every claim in this file is a `#guard` or a theorem, so `lake build` fails if any
 of them stops holding. Two of them are the ones worth arguing about: that a RAT
