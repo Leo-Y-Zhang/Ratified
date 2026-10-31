@@ -52,6 +52,7 @@ MUTATIONS = [
     ),
     dict(
         name="Propagation is allowed to reassign a variable",
+        kind="the progress lemma `findUnit_var_fresh` (the change is sound; it only wastes fuel)",
         file="Ratified/Propagate.lean",
         old="  decide (l ∈ c) && isUnassigned t l &&\n"
             "    c.all (fun l' => decide (l' = l) || isFalse t l')",
@@ -73,6 +74,7 @@ MUTATIONS = [
     ),
     dict(
         name="The lemma is dropped from its own resolvent",
+        kind="the proof script of `isRAT_sound` (the change is sound; it rejects valid RAT steps)",
         file="Ratified/RAT.lean",
         old="  c ++ d.filter (fun l => decide (l ≠ p.negate))",
         new="  d.filter (fun l => decide (l ≠ p.negate))",
@@ -124,7 +126,7 @@ def sanitise(text, limit=8):
     return keep
 
 
-def caught_by(errors):
+def caught_by(errors, override=None):
     """Which gate fired: a soundness proof, or an executable check."""
     for line in errors:
         if line.startswith("error: ") and ".lean:" in line:
@@ -134,6 +136,7 @@ def caught_by(errors):
                 if module.endswith(("Examples.lean", "Audit.lean"))
                 else "a soundness proof"
             )
+            kind = override or kind
             return "`{}`, {}".format(module, kind)
     return "the build, location not recorded"
 
@@ -206,7 +209,7 @@ def main():
             + ("KILLED, the build fails" if killed else "SURVIVED, NOT PINNED")
         )
         if killed:
-            lines.append("- **Caught by:** " + caught_by(errors))
+            lines.append("- **Caught by:** " + caught_by(errors, mutation.get("kind")))
         lines.append("")
         lines.append("```diff")
         for line in mutation["old"].splitlines():

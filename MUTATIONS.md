@@ -80,7 +80,7 @@ error: build failed
 - **Why it is load-bearing:** Without it propagation can put a variable on the trail twice, and the fuel bound stops being finite for the reason `fuelFor` claims. This is what makes the progress theorems load-bearing rather than decorative.
 - **File:** `Ratified/Propagate.lean`
 - **Verdict:** KILLED, the build fails
-- **Caught by:** `Ratified/Propagate.lean`, a soundness proof
+- **Caught by:** `Ratified/Propagate.lean`, the progress lemma `findUnit_var_fresh` (the change is sound; it only wastes fuel)
 
 ```diff
 -  decide (l ∈ c) && isUnassigned t l &&
@@ -121,7 +121,7 @@ error: build failed
 - **Why it is load-bearing:** Checking the wrong clause is checking nothing.
 - **File:** `Ratified/RAT.lean`
 - **Verdict:** KILLED, the build fails
-- **Caught by:** `Ratified/RAT.lean`, a soundness proof
+- **Caught by:** `Ratified/RAT.lean`, the proof script of `isRAT_sound` (the change is sound; it rejects valid RAT steps)
 
 ```diff
 -  c ++ d.filter (fun l => decide (l ≠ p.negate))
