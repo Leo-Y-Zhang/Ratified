@@ -149,16 +149,22 @@ Not even `Classical.choice`.
 **Mutation evidence.** A proof that has never been observed failing is
 decoration. `MUTATIONS.md` records seven rules that could be quietly dropped, the
 mutation that drops each one, and the build failure that resulted — **seven of
-seven killed**. The split is the interesting part: the six soundness rules are
-caught by proofs failing to compile, and the one completeness rule (the fuel
-bound) is invisible to every proof and caught only by an executable check. That
-is what the design predicted, and it is why both gates exist.
+seven killed**. The split is the interesting part, and it is subtler than it first looked.
+All four mutants that make the checker unsound broke a soundness proof. Two
+sound mutants broke proof scripts too: a compile failure shows that a proof
+depends on a definition, not that the change is unsound. The one completeness
+rule (the fuel bound) is invisible to every proof and caught only by an
+executable check, which is why both gates exist. The
+[preprint](https://aixiv.online/abs/2610.03288) classifies all seven and gives a
+counterexample for each unsound one.
 
 CI re-runs the whole campaign on hardware that is not mine and fails if the
 regenerated `MUTATIONS.md` differs from the committed one, so the evidence is
 checked rather than asserted.
 
-**Worked examples.** 15 `#guard` checks, decided by the kernel at build time: a
+**Worked examples.** 15 `#guard` checks, run by Lean's evaluator at
+build time (they are not kernel proofs), plus four kernel-checked example
+theorems: a
 refutation the checker accepts, a satisfiable formula it must not, the RAT
 example above, and the individual rules that are load-bearing on their own — the
 empty clause having no pivot, and a repeated literal not being a tautology.
