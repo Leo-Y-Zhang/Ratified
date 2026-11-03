@@ -38,7 +38,7 @@ rule is proved sound in this repository replays it and agrees.
 | --- | --- |
 | `d08_satisfiable_formula` | The formula has a model. No proof of it can be accepted, and `no_false_accept` says so for every proof, not just this one. |
 | `d09_trail_leak_between_candidates` | Built to catch a checker that does not unwind its trail between RAT candidates. |
-| `d10_duplicate_clause_deleted_once` | A duplicated clause deleted once; the other copy must stay live. |
+| `d10_duplicate_clause_deleted_once` | A satisfiable formula with a duplicated clause deleted once; exercises the deletion path. It cannot detect a checker that deletes every copy: over-deletion only makes refutations harder, so it is a completeness issue, not a soundness one. |
 
 ## Reproducing them
 

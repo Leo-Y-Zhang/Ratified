@@ -105,10 +105,10 @@ Concretely, out of scope here:
 
 - **The readers.** `Ratified/Parse.lean` turns DIMACS and DRAT text into Lean
   values and is completely unverified. It is the boundary: the theorem starts
-  where the reader returns. It fails loudly rather than skipping what it cannot
-  understand, because a reader that silently dropped a malformed clause would
-  make a verdict meaningless while still printing it — but that is a design
-  choice, not a proof.
+  where the reader returns. It is deliberately simple and not fully defensive: it
+  skips comment and header lines without checking the header, and it does not
+  reject every malformed line (a DRAT line such as `1 0 2` is read as the clause
+  `[1, 2]`). Treat its output as unverified input to the verified checker.
 - **The compiler.** The binary is produced by Lean's compiler, not reduced by its
   kernel, so running it trusts the compiler in the way any extracted verified
   program does. The kernel-checked version of the same claim, for formulas small
